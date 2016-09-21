@@ -9,7 +9,7 @@ void cmd_cls(struct CONSOLE* cons);
 void cmd_mem(struct CONSOLE* cons, unsigned int memtotal);
 void cons_runcmd(char* cmdline, struct CONSOLE* cons, int *fat, unsigned int memtotal);
 int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline);
-void cons_putstr(struct CONSOLE*cons, char * s);
+
 void hrb_api_linewin(struct SHEET * sht, int x0, int y0, int x1, int y1, int col);
 void console_task(struct SHEET *sheet, unsigned int memtotal)
 {
@@ -296,6 +296,8 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 	struct MEMMAN *memman = (struct MEMMAN*)MEMMAN_ADDR;
 	struct FILEINFO*finfo;
 	char name[18], *p, *q;
+    struct SHEET*sht;
+    struct SHTCTL*shtctl;
 	int i;
 	struct TASK*task = task_now();
 	for(i = 0; i < 13; i++)
@@ -328,6 +330,15 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 		for(i =0; i < finfo->size; i++)
 			q[i] = p[i];
 		start_app(0, 103 * 8, 64 * 1024, 104 * 8, &(task->tss.esp0));
+        shtctl = (struct SHTCTL*)*((int*)0xfe4);
+        for(i = 0; i< MAX_SHEETS; i ++)
+        {
+            sht = &(shtctl->sheets0[i]);
+            if((sht->flags & 0x11)== 0x11 && sht->task == task)
+            {
+                sheet_free(sht);
+            }
+        }
 		memman_free_4k(memman, (int)p, finfo->size);
 		memman_free_4k(memman, (int)q, 64 * 1024);
 		cons_newline(cons);
@@ -377,6 +388,8 @@ int* hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 	}else if(edx == 5)
 	{
 		sht = sheet_alloc(shtctl);
+        sht->task = task;
+        sht->flags |= 0x10;
 		sheet_setbuf(sht, (char*)ebx + ds_base, esi, edi ,eax);
 		make_window8((char*)ebx + ds_base, esi, edi, (char*)ecx + ds_base, 0);
 		sheet_slide(sht, 300, 50);
@@ -432,9 +445,10 @@ int* hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 					return 0;
 				}
 			}
-			
+
 			i = fifo32_get(&task->fifo);
 			io_sti();
+           
 			if(i <= 1)
 			{
 				timer_init(cons->timer, &task->fifo, 1);
@@ -448,13 +462,31 @@ int* hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			{
 				cons->cur_c = -1;
 			}
-			if(256<=i && i <= 512)
+			if(256 <= i)
 			{
+                itoa10(i,s);
+                cons_putstr(cons, s);
 				reg[7] = i - 256;
+               
 				return 0;
 			}
-		}
-	}
+        }
+    }else if(edx == 16)
+    {
+        reg[7] = (int)timer_alloc();
+        timer_init((struct TIMER*)reg[7], &task->fifo, 277);
+         timer_settime((struct TIMER*)reg[7], 100);
+    }else if(edx == 17)
+    {
+        
+    }else if (edx == 18)
+    {
+        //timer_settime((struct TIMER*)ebx, eax);
+    }else if( edx == 19)
+    {
+        timer_free((struct TIMER*)ebx);
+    }
+	
 	return 0;
 	
 }

@@ -162,6 +162,7 @@ struct SHEET
 	char * buf;
 	int bxsize,bysize,vx0,vy0,col_inv,height ,flags;
 	struct SHTCTL*ctl;
+    struct TASK*task;
 };
 struct SHTCTL
 {
@@ -259,7 +260,9 @@ int mousedecode(struct MOUSE_DEC* mdec, unsigned char dat);
 void putfonts8_asc_sht(struct SHEET *sht, int x, int y, int c, int b, char *s, int l);
 void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c);
 void make_wtitle8(unsigned char * buf, int xsize, char * title, char act);
+void change_wtitle8(struct SHEET* sht, char act);
 void console_task(struct SHEET *sheet,unsigned int);
 int* hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
 int* inthandler0d(int *esp);
 int* inthandler0c(int*esp);
+void cons_putstr(struct CONSOLE*cons, char * s);
