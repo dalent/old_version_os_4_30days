@@ -1,1 +1,0 @@
-void get_k_from_n(int *array,int n,int k){	int tmp[n];	int i;	int j = n - 1,t;	for(i = 0; i < n; i++)	{		tmp[i] = i;	}	for(i = 0; i < k; i++)	{		t = tmp[rand % n];		tmp[j] = tmp[rand % (j + 1)];		array[i] = tmp[j];		j--;			}}
