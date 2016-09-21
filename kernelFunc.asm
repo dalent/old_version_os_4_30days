@@ -312,7 +312,7 @@ _start_app:; void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 		MOV		GS,BX
 ;	
 		OR		ECX,3			; 
-		OR		EBX,3			; 低两位不等于现在的低两位时，表示发生特权及变化，需要恢复esp和ss
+		OR		EBX,3			; 
 		PUSH	EBX				; 
 		PUSH	EDX				; 
 		PUSH	ECX				; cs压入栈

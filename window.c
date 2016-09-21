@@ -30,18 +30,9 @@ void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c)
 
 void putfonts8_asc_sht(struct SHEET *sht, int x, int y, int c, int b, char *s, int l)
 {
-	struct TASK *task = task_now();
 	boxfill8(sht->buf, sht->bxsize, b, x, y, x + l * 8 - 1, y + 15);
-	if(task->langmode != 0 && task->langbyte != 0)
-	{
-		putfonts8_asc(sht->buf, sht->bxsize, x, y, c, s);
-		sheet_refresh(sht, x - 1 * 8, y, x + l * 8, y + 16);
-	}else
-	{
-		putfonts8_asc(sht->buf, sht->bxsize, x, y, c, s);
-		sheet_refresh(sht, x, y, x + l * 8, y + 16);
-	
-	}
+	putfonts8_asc(sht->buf, sht->bxsize, x, y, c, s);
+	sheet_refresh(sht, x, y, x + l * 8, y + 16);
 	return;
 }
 
@@ -90,37 +81,4 @@ void make_wtitle8(unsigned char *buf, int xsize, char *title, char act)
 		}
 	}
 	return;
-}
-void change_wtitle8(struct SHEET* sht, char act)
-{
-    int x,y,xsize= sht->bxsize;
-    char c, tc_new, tc_old, tbc_new,tbc_old, *buf = sht->buf;
-    if(act != 0)
-    {
-        tc_new = COL8_FFFFFF;
-        tbc_new = COL8_000084;
-        tc_old = COL8_C6C6C6;
-        tbc_old = COL8_848484;
-    }else
-    {
-        tc_new = COL8_C6C6C6;
-        tc_old = COL8_FFFFFF;
-        tbc_new = COL8_848484;
-        tbc_old = COL8_000084;
-    }
-    
-    for(y = 3; y <= 20; y++)
-    {
-        for(x =3 ; x < xsize - 4; x++)
-        {
-            c = buf[y * xsize + x];
-            if(c == tc_old && x <= xsize - 22)
-                c = tc_new;
-            else if(c == tbc_old)
-                c = tbc_new;
-            buf[y * xsize + x] = c;
-        }
-        
-    }
-    sheet_refresh(sht, 3,3, xsize ,21);
 }

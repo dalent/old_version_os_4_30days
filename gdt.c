@@ -1,7 +1,14 @@
 //intel 
 #include "system.h" 
-#define SEGMENT_COUNT 0x200
-
+#define SEGMENT_COUNT 0x100
+struct gdt_entry
+{   unsigned short limit_low;
+    unsigned short base_low;
+    unsigned char  base_middle;
+    unsigned char  access_right;
+    unsigned char  granularity;
+    unsigned char  base_high;
+}__attribute__((packed));
 
 struct gdt_ptr
 {
@@ -28,23 +35,6 @@ void gdt_set_gate(int num, unsigned long base,unsigned long limit, unsigned char
     /* Finally, set up the granularity and access flags */
     gdt[num].granularity |= (gran & 0xF0);
     gdt[num].access_right = access;
-}
-
-void ldt_set_gate(struct gdt_entry * ldt_ptr, unsigned long base,unsigned long limit, unsigned char access,unsigned char gran)
-{
-  /* Setup the descriptor base address */
-    ldt_ptr->base_low = (base & 0xFFFF);
-    ldt_ptr->base_middle = (base >> 16) & 0xFF;
-    ldt_ptr->base_high = (base >> 24) & 0xFF;
-
-    /* Setup the descriptor limits */
-    ldt_ptr->limit_low = (limit & 0xFFFF);
-    ldt_ptr->granularity = ((limit >> 16) & 0x0F);
-
-    /* Finally, set up the granularity and access flags */
-    ldt_ptr->granularity |= (gran & 0xF0);
-    ldt_ptr->access_right = access;
-
 }
 
 void gdt_install()

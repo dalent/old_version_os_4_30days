@@ -50,15 +50,6 @@ void inthandler27(int *esp);
 
 #define ADR_BOOTINFO	0x00000ff0
 //多任务相关
-struct gdt_entry
-{   unsigned short limit_low;
-    unsigned short base_low;
-    unsigned char  base_middle;
-    unsigned char  access_right;
-    unsigned char  granularity;
-    unsigned char  base_high;
-}__attribute__((packed));
-
 struct TSS32 {
 	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
 	int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
@@ -85,25 +76,11 @@ struct FILEINFO
 	unsigned int size;
 };
 #define ADR_DISKIMG 0x100000
-struct cons;
-struct FILEHANDLE
-{
-	char * buf;
-	int size;
-	int pos;
-};
 struct TASK
 {
 	int sel,flags;//sel 保存gdt编号
-	int priority,level;	
-	struct CONSOLE*cons;	struct FIFO32 fifo;
+	int priority,level;		struct FIFO32 fifo;
 	struct TSS32 tss;
-	struct gdt_entry ldt[2];
-	int ds_base,cons_stack;//保存栈地址以及数据基址
-	struct FILEHANDLE* fhandle;
-	int *fat;
-	char *cmdline;
-	unsigned char langmode, langbyte;
 };
 struct TASKLEVEL
 {
@@ -185,7 +162,6 @@ struct SHEET
 	char * buf;
 	int bxsize,bysize,vx0,vy0,col_inv,height ,flags;
 	struct SHTCTL*ctl;
-    struct TASK*task;
 };
 struct SHTCTL
 {
@@ -211,14 +187,12 @@ struct TIMER* timer_alloc(void);
 void timer_free(struct TIMER*timer);
 void timer_settime(struct TIMER*timer, unsigned int timeout);
 void timer_init(struct TIMER*timer, struct FIFO32*fifo, unsigned char data);
-void timer_cancelall(struct FIFO32*fifo);
 struct TIMER
 {
 	struct TIMER * next;
-	unsigned int timeout,flags,flags2;
+	unsigned int timeout,flags;
 	struct FIFO32 *fifo;
 	int data;
-	
 };
 struct TIMERCTL
 {
@@ -279,17 +253,12 @@ struct CONSOLE
 {
 	struct SHEET*sht;
 	int cur_x, cur_y, cur_c;
-	struct TIMER*timer;
 };
 int mousedecode(struct MOUSE_DEC* mdec, unsigned char dat);
 void putfonts8_asc_sht(struct SHEET *sht, int x, int y, int c, int b, char *s, int l);
 void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c);
 void make_wtitle8(unsigned char * buf, int xsize, char * title, char act);
-void change_wtitle8(struct SHEET* sht, char act);
 void console_task(struct SHEET *sheet,unsigned int);
 int* hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
 int* inthandler0d(int *esp);
 int* inthandler0c(int*esp);
-void cons_putstr(struct CONSOLE*cons, char * s);
-struct SHEET* open_console(struct SHTCTL*shtctl, unsigned int memtotal);
-struct TASK* open_constask(struct SHEET*sht, unsigned int memtotal);

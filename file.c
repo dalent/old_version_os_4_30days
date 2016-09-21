@@ -12,22 +12,21 @@ void file_readfat(int * fat, unsigned char * img)//读取fat数据区
 }
 
 void file_loadfile(int clustno, int size, char *buf, int *fat, char *img)
-{//我发现这种方法也不行，不能读取准确的位置，暂时没有碎片，就不用这种方式啦
+{
 	int i;
 	for (;;) {
-		//if (size <= 512) {
-			//for (i = 0; i < size; i++) {
-			//	buf[i] = img[clustno * 512 + i];
-			//}
-			//break;
-		//}
-		for (i = 0; i < size; i++) {
+		if (size <= 512) {
+			for (i = 0; i < size; i++) {
+				buf[i] = img[clustno * 512 + i];
+			}
+			break;
+		}
+		for (i = 0; i < 512; i++) {
 			buf[i] = img[clustno * 512 + i];
 		}
-		break;
-		//size -= 512;
-		//buf += 512;
-		//clustno = fat[clustno];
+		size -= 512;
+		buf += 512;
+		clustno = fat[clustno];
 	}
 	return;
 }

@@ -11,9 +11,7 @@ struct TASK* task_init(struct MEMMAN*memman)
 	{
 		taskctl->tasks0[i].flags = 0;
 		taskctl->tasks0[i].sel   =  (TASK_GDT0 + i) * 8;
-		taskctl->tasks0[i].tss.ldtr = (TASK_GDT0 + MAX_TASKS + i) * 8;
 		gdt_set_gate(TASK_GDT0 + i, (int)&taskctl->tasks0[i].tss, 103, 0x89, 0x00);//设置任务对应的gdt
-		gdt_set_gate(TASK_GDT0 + i + MAX_TASKS, (int)taskctl->tasks0[i].ldt, 15, 0x82, 0x00);
 	}	
 	
 	for(i = 0; i < MAX_TASKLEVELS; i++)
@@ -69,6 +67,7 @@ struct TASK* task_alloc(void)
 			task->tss.ds  = 0;
 			task->tss.fs  = 0;
 			task->tss.gs  = 0;
+			task->tss.ldtr = 0;
 			task->tss.iomap = 0x40000000;
 			return task;
 		}
