@@ -1,0 +1,50 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+                0x00000000                phys = 0x0
+
+.text           0x00000000      0x320
+                0x00000000                code = .
+                0x00000000                _code = .
+                0x00000000                __code = .
+ *(.text)
+ .text          0x00000000      0x11c e.o
+                0x0000000c                _api_putchar
+                0x00000018                _api_putstr
+                0x00000026                _api_openwin
+                0x00000048                _api_putstrwin
+                0x00000070                _api_boxfilwin
+                0x00000098                _api_point
+                0x000000b6                _api_refreshwin
+                0x000000d8                _api_linewin
+                0x00000100                _api_closewin
+                0x0000010e                _api_getkey
+ *fill*         0x0000011c        0x4 
+ .text          0x00000120      0x200 m.o
+                0x00000120                _main
+                0x00000320                data = .
+                0x00000320                _data = .
+                0x00000320                __data = .
+
+.data           0x00000320       0x6c
+ *(.rodata)
+ *(.data)
+ .data          0x00000320        0x0 e.o
+ .data          0x00000320       0x20 m.o
+ *(.bss)
+ .bss           0x00000340        0x0 e.o
+ .bss           0x00000340        0x0 m.o
+ *(.*)
+ .comment       0x00000340       0x14 m.o
+ .eh_frame      0x00000354       0x38 m.o
+                0x0000038c                dataend = .
+                0x0000038c                dataend = .
+                0x0000038c                __datasize = .
+LOAD e.o
+LOAD m.o
+OUTPUT(test binary)
