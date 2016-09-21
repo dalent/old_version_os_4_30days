@@ -1,7 +1,7 @@
 ; haribote-ipl
 ; TAB=4
 
-CYLS	EQU		10				; 读取的柱面数
+CYLS	EQU		20				; 读取的柱面数
 
 		ORG		0x7c00			; 
 

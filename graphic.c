@@ -21,7 +21,21 @@ void init_palette(void)
 		0x00, 0x84, 0x84,	/* 14:暗水 */
 		0x84, 0x84, 0x84	/* 15:暗灰 */
 	};
+	unsigned char table2[216 * 3];
+	int r,g,b;
 	set_palette(0, 15, table_rgb);
+	for(b = 0; b < 6; b++)
+		for(g = 0; g < 6; g++)
+			for(r = 0; r < 6; r++)
+			{
+				table2[ (r + g * 6 + b * 36) * 3 + 0] = r * 51;
+				table2[ (r + g * 6 + b * 36) * 3 + 1] = g * 51;
+				table2[ (r + g * 6 + b * 36) * 3 + 2] = b * 51;
+			
+			}
+			
+			
+	set_palette(16, 231, table2);
 	return;
 }
 
@@ -77,26 +91,86 @@ void putfont8(char *vram, int xsize, int x, int y, char c, char *font)
 	for(i=0;i<16;i++)
 	{
 		p = &vram[(y + i)*xsize+ x];
-		if((font[i]&0x80)!=0){p[0] = c;}
-		if((font[i]&0x40)!=0){p[1] = c;}
-		if((font[i]&0x20)!=0){p[2] = c;}
-		if((font[i]&0x10)!=0){p[3] = c;}
-		if((font[i]&0x08)!=0){p[4] = c;}
-		if((font[i]&0x04)!=0){p[5] = c;}
-		if((font[i]&0x02)!=0){p[6] = c;}
-		if((font[i]&0x01)!=0){p[7] = c;}
+		if((font[i]&0x80) != 0){p[0] = c;}
+		if((font[i]&0x40) != 0){p[1] = c;}
+		if((font[i]&0x20) != 0){p[2] = c;}
+		if((font[i]&0x10) != 0){p[3] = c;}
+		if((font[i]&0x08) != 0){p[4] = c;}
+		if((font[i]&0x04) != 0){p[5] = c;}
+		if((font[i]&0x02) != 0){p[6] = c;}
+		if((font[i]&0x01) != 0){p[7] = c;}
 		
 	}
 	return;
 }
-void putfonts8_asc(char *vram, int xsize, int x, int y, char c, char *s)
+void putfont8_chinese(char *vram, int xsize, int x, int y, char c, char *font)
 {
-	extern char hankaku[4096];
-	for(;*s!=0x00;s++)
+	int i, j;
+	char*p;
+	for(i = 0;i < 16;i++)
 	{
-		putfont8(vram,xsize,x,y,c,hankaku + *s*16);
-		x+=8;
+		p = &vram[(y + i)*xsize+ x];
+		if((font[i * 2]&0x80) != 0){p[0] = c;}
+		if((font[i * 2]&0x40) != 0){p[1] = c;}
+		if((font[i * 2]&0x20) != 0){p[2] = c;}
+		if((font[i * 2]&0x10) != 0){p[3] = c;}
+		if((font[i * 2]&0x08) != 0){p[4] = c;}
+		if((font[i * 2]&0x04) != 0){p[5] = c;}
+		if((font[i * 2]&0x02) != 0){p[6] = c;}
+		if((font[i * 2]&0x01) != 0){p[7] = c;}
+		if((font[i * 2 + 1]&0x80) != 0){p[8] = c;}
+		if((font[i * 2 + 1]&0x40) != 0){p[9] = c;}
+		if((font[i * 2 + 1]&0x20) != 0){p[10] = c;}
+		if((font[i * 2 + 1]&0x10) != 0){p[11] = c;}
+		if((font[i * 2 + 1]&0x08) != 0){p[12] = c;}
+		if((font[i * 2 + 1]&0x04) != 0){p[13] = c;}
+		if((font[i * 2 + 1]&0x02) != 0){p[14] = c;}
+		if((font[i * 2 + 1]&0x01) != 0){p[15] = c;}
+		
 	}
+	return;
+}
+void putfonts8_asc(char *vram, int xsize, int x, int y, char c, unsigned char *s)
+{
+
+	extern char hankaku[4096];
+	struct TASK *task = task_now();
+	char *nihongo = (char*)*((int*)0xfe8),*font;
+	
+
+	if(task->langmode == 0)
+	{
+		for(; *s != 0x00; s++)
+		{
+			putfont8(vram,xsize, x, y, c, hankaku + *s * 16);
+			x += 8;
+		}
+	}
+	if (task->langmode == 1)
+	{
+		for (; *s != 0x00; s++)
+		{
+			if((unsigned int)*s > 0xa0)
+			{
+				if(task->langbyte == 0)
+				{
+					task->langbyte = (unsigned char)*s - 0xa0;
+				}else
+				{
+					font = nihongo + ((task->langbyte - 1) * 94 + (unsigned char)*s - 0xa1) * 32;
+					putfont8_chinese(vram, xsize, x - 8, y, c,font);
+					task->langbyte = 0;
+				}
+			}else
+			{
+				putfont8(vram, xsize, x, y, c, hankaku  + *s * 16);
+				
+			}
+			
+			x += 8;
+		}
+	}
+	
 }
 
 void init_mouse_cursor8(char *mouse, char bc)

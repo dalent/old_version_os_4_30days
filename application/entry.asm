@@ -2,6 +2,10 @@ extern _main
 	call _main
 	mov edx,4
 	int 0x40
+global _api_end
+_api_end:
+	mov edx,4
+	int 0x40
 global _api_putchar:;void api_putchar(int c);
 _api_putchar:
 	mov edx, 0x1
@@ -174,6 +178,72 @@ _api_freetimer:
         int 0x40
         pop ebx
         ret
-        
-		
-	
+global _api_beep
+_api_beep:
+		mov edx,20
+		mov eax,[esp + 4]   ;tone
+		int 0x40
+		ret
+global _api_fopen
+_api_fopen:
+		push ebx
+		mov edx,21
+		mov ebx,[esp+8]
+		int 0x40
+		pop ebx
+		ret
+global _api_fclose
+_api_fclose:;void api_fclose(int fhandle);
+		mov edx,22
+		mov eax,[esp + 4]
+		int 0x40
+		ret
+global _api_fseek
+_api_fseek:;void api_fseek(int fhandle, int offset, int mode);
+		push ebx
+		mov edx, 23
+		mov eax,[esp + 8];fhandle
+		mov ecx,[esp + 16];mode
+		mov ebx,[esp + 12];offset
+		int 0x40
+		ret
+global _api_fsize
+_api_fsize:;int api_fsize(int fhandle, int mode);
+		mov edx, 24
+		mov eax,[esp + 4];fhandle
+		mov ecx,[esp + 8];mode
+		int 0x40
+		ret
+global _api_fread
+_api_fread:;int api_fread(char * buf, int maxsize, int fhandle);
+		push ebx
+		mov edx,25
+		mov eax,[esp + 16];fhandle
+		mov ecx,[esp + 12];maxsize
+		mov ebx,[esp + 8];buf
+		int 0x40
+		pop ebx
+		ret
+global _api_cmdline
+_api_cmdline:
+		push ebx
+		mov edx,26
+		mov ecx, [esp + 12]
+		mov ebx,[esp + 8]
+		int 0x40
+		pop ebx
+		ret
+global _api_getlang
+_api_getlang:;int api_getlang(void);
+		mov edx,27
+		int 0x40
+		ret
+global _api_initmalloc
+_api_initmalloc: ;void api_initmalloc(void)
+		ret
+global _api_malloc
+_api_malloc:
+	ret;
+global _api_free
+_api_free:
+	ret;
