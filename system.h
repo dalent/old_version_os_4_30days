@@ -253,6 +253,7 @@ struct CONSOLE
 {
 	struct SHEET*sht;
 	int cur_x, cur_y, cur_c;
+	struct TIMER*timer;
 };
 int mousedecode(struct MOUSE_DEC* mdec, unsigned char dat);
 void putfonts8_asc_sht(struct SHEET *sht, int x, int y, int c, int b, char *s, int l);

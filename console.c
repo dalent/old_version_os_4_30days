@@ -325,6 +325,8 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 		file_loadfile(finfo->clustno, finfo->size, p, fat, (char*) (ADR_DISKIMG + 0x003e00));
 		gdt_set_gate(103, (int)p, finfo->size - 1, 0x9a + 0x60, 0x40);
 		gdt_set_gate(104, (int)q, 64 * 1024 - 1, 0x92 + 0x60, 0x40);
+		for(i =0; i < finfo->size; i++)
+			q[i] = p[i];
 		start_app(0, 103 * 8, 64 * 1024, 104 * 8, &(task->tss.esp0));
 		memman_free_4k(memman, (int)p, finfo->size);
 		memman_free_4k(memman, (int)q, 64 * 1024);
@@ -355,12 +357,11 @@ int* hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 	char s[20];
 	static char error[] = "%d error\n";
 	static char errorip[] = "ebx = %d \n";
-	s[5] = 0;
 	int ds_base = *((int *)0xfe8);
 	struct TASK*task = task_now();
 	struct SHTCTL*shtctl = (struct SHTCTL*)*(int*)0x0fe4;
 	struct SHEET* sht;
-	int *reg = &eax + 1;//强行改写通过pushad保存的值
+	int *reg = &eax + 1, i;//强行改写通过pushad保存的值
 	if(edx == 1)
 	{
 		cons_putchar(cons, eax & 0xff, 1);
@@ -385,24 +386,22 @@ int* hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 	{
 		sht = (struct SHEET*)(ebx & 0xfffffffe);
 		putfonts8_asc(sht->buf, sht->bxsize, esi, edi ,eax, (char*)ebp + ds_base);
-		if(ebx & 1 == 0)
+		if((ebx & 1) == 0)
 			sheet_refresh(sht, esi ,edi ,esi + ecx * 8, edi + 16);
 	}else if( edx == 7)
 	{
 		sht = (struct SHEET *)(ebx & 0xfffffffe);
 		boxfill8(sht->buf, sht->bxsize, ebp, eax, ecx, esi, edi);
-		if(ebx & 1 == 0)
+		if((ebx & 1) == 0)
 			sheet_refresh(sht, eax, ecx, esi + 1 , edi + 1);
 	}else if( edx == 11)
 	{
 		sht = (struct SHEET*)(ebx & 0xfffffffe);
 		sht->buf[sht->bxsize * edi + esi] = eax;
-		if(ebx & 1 == 0)
+		if((ebx & 1) == 0)
 			sheet_refresh(sht, esi, edi, esi + 1, edi + 1);
 	}else if(edx == 12)
 	{
-		sprintf(s, errorip, ebx);
-		cons_putstr(cons, s);
 		sht = (struct SHEET*) ebx;
 		sheet_refresh(sht, eax, ecx, esi, edi);
 	}else if(edx == 13)
@@ -410,9 +409,51 @@ int* hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		sht = (struct SHEET*)(ebx & 0xfffffffe);
 		hrb_api_linewin(sht, eax, ecx, esi ,edi , ebp);
 		//cons_putstr(cons, s);
-		if(ebx & 1 == 0 )
+		if((ebx & 1) == 0 )
 			sheet_refresh(sht, eax, ecx, esi + 1, edi + 1);
 		
+	}else if (edx == 14)
+	{
+		sheet_free((struct SHEET*) ebx);
+	}else if( edx == 15)
+	{
+		for(;;)
+		{
+			io_cli();
+			if(fifo32_status(&task->fifo) == 0)
+			{
+				if(eax != 0)
+				{
+					task_sleep(task);
+				}else
+				{
+					io_sti();
+					reg[7] = -1;
+					return 0;
+				}
+			}
+			
+			i = fifo32_get(&task->fifo);
+			io_sti();
+			if(i <= 1)
+			{
+				timer_init(cons->timer, &task->fifo, 1);
+				timer_settime(cons->timer, 50);
+			}
+			if( i == 2)
+			{
+				cons->cur_c = COL8_FFFFFF;
+			}
+			if(i == 3)
+			{
+				cons->cur_c = -1;
+			}
+			if(256<=i && i <= 512)
+			{
+				reg[7] = i - 256;
+				return 0;
+			}
+		}
 	}
 	return 0;
 	
