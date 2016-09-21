@@ -115,7 +115,7 @@ keystatus:
 		MOV		ESI,DSKCAC0+512	; 把其余的也加载进来
 		MOV		EDI,DSKCAC+512	; 
 		MOV		ECX,0
-		MOV		CL,BYTE [CYLS]
+		MOV		CL,15;BYTE [CYLS]
 		IMUL	ECX,512*18*2/4	; 
 		SUB		ECX,512/4		; 
 		CALL	memcpy

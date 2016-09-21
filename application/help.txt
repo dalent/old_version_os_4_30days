@@ -1,0 +1,75 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+                0x00000000                phys = 0x0
+
+.text           0x00000000      0x5d0
+                0x00000000                code = .
+                0x00000000                _code = .
+                0x00000000                __code = .
+ *(.text)
+ .text          0x00000000      0x1c8 e.o
+                0x0000000c                _api_putchar
+                0x00000018                _api_putstr
+                0x00000026                _api_openwin
+                0x00000048                _api_putstrwin
+                0x00000070                _api_boxfilwin
+                0x00000098                _api_point
+                0x000000b6                _api_refreshwin
+                0x000000d8                _api_linewin
+                0x00000100                _api_closewin
+                0x0000010e                _api_getkey
+                0x0000011a                _api_alloctimer
+                0x00000122                _api_inittimer
+                0x00000134                _api_settimer
+                0x00000146                _api_freetimer
+                0x00000154                _api_beep
+                0x00000160                _api_fopen
+                0x0000016e                _api_fclose
+                0x0000017a                _api_fseek
+                0x0000018f                _api_fsize
+                0x0000019f                _api_fread
+                0x000001b5                _api_cmdline
+ *fill*         0x000001c8        0x8 
+ .text          0x000001d0      0x160 n.o
+                0x000001d0                _main
+ .text          0x00000330      0x2a0 u.o
+                0x00000330                _itoa10
+                0x000003cd                _sprintf
+                0x0000047b                _memcpy
+                0x000004a0                _strcpy
+                0x000004dc                _memset
+                0x00000510                _strlen
+                0x00000537                _strcmp
+                0x0000058a                _strncmp
+                0x000005d0                data = .
+                0x000005d0                _data = .
+                0x000005d0                __data = .
+
+.data           0x000005d0      0x13c
+ *(.rodata)
+ *(.data)
+ .data          0x000005d0        0x0 e.o
+ .data          0x000005d0       0x10 n.o
+ .data          0x000005e0        0x0 u.o
+ *(.bss)
+ .bss           0x000005e0        0x0 e.o
+ .bss           0x000005e0        0x0 n.o
+ .bss           0x000005e0        0x0 u.o
+ *(.*)
+ .comment       0x000005e0       0x14 n.o
+ .eh_frame      0x000005f4       0x38 n.o
+ .comment       0x0000062c       0x14 u.o
+ .eh_frame      0x00000640       0xcc u.o
+                0x0000070c                dataend = .
+                0x0000070c                dataend = .
+                0x0000070c                __datasize = .
+LOAD e.o
+LOAD n.o
+LOAD u.o
+OUTPUT(noodle binary)

@@ -21,7 +21,21 @@ void init_palette(void)
 		0x00, 0x84, 0x84,	/* 14:暗水 */
 		0x84, 0x84, 0x84	/* 15:暗灰 */
 	};
+	unsigned char table2[216 * 3];
+	int r,g,b;
 	set_palette(0, 15, table_rgb);
+	for(b = 0; b < 6; b++)
+		for(g = 0; g < 6; g++)
+			for(r = 0; r < 6; r++)
+			{
+				table2[ (r + g * 6 + b * 36) * 3 + 0] = r * 51;
+				table2[ (r + g * 6 + b * 36) * 3 + 1] = g * 51;
+				table2[ (r + g * 6 + b * 36) * 3 + 2] = b * 51;
+			
+			}
+			
+			
+	set_palette(16, 231, table2);
 	return;
 }
 
@@ -91,12 +105,27 @@ void putfont8(char *vram, int xsize, int x, int y, char c, char *font)
 }
 void putfonts8_asc(char *vram, int xsize, int x, int y, char c, char *s)
 {
+
 	extern char hankaku[4096];
-	for(;*s!=0x00;s++)
+	struct TASK *task = task_now();
+	char *nihongo = (char*)*((int*)0xfe8);
+	if(task->langmode == 0)
 	{
-		putfont8(vram,xsize,x,y,c,hankaku + *s*16);
-		x+=8;
+		for(; *s != 0x00; s++)
+		{
+			putfont8(vram,xsize, x, y, c, hankaku + *s * 16);
+			x += 8;
+		}
 	}
+	if (task->langmode == 1)
+	{
+		for(; *s != 0x00; s++)
+		{
+			putfont8(vram, xsize, x, y, c, nihongo + *s * 16);
+			x += 8;
+		}
+	}
+	
 }
 
 void init_mouse_cursor8(char *mouse, char bc)
