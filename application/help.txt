@@ -1,0 +1,68 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+                0x00000000                phys = 0x0
+
+.text           0x00000000      0x560
+                0x00000000                code = .
+                0x00000000                _code = .
+                0x00000000                __code = .
+ *(.text)
+ .text          0x00000000      0x154 e.o
+                0x0000000c                _api_putchar
+                0x00000018                _api_putstr
+                0x00000026                _api_openwin
+                0x00000048                _api_putstrwin
+                0x00000070                _api_boxfilwin
+                0x00000098                _api_point
+                0x000000b6                _api_refreshwin
+                0x000000d8                _api_linewin
+                0x00000100                _api_closewin
+                0x0000010e                _api_getkey
+                0x0000011a                _api_alloctimer
+                0x00000122                _api_inittimer
+                0x00000134                _api_settimer
+                0x00000146                _api_freetimer
+ *fill*         0x00000154        0xc 
+ .text          0x00000160      0x160 m.o
+                0x00000160                _main
+ .text          0x000002c0      0x2a0 u.o
+                0x000002c0                _itoa10
+                0x0000035d                _sprintf
+                0x0000040b                _memcpy
+                0x00000430                _strcpy
+                0x0000046c                _memset
+                0x000004a0                _strlen
+                0x000004c7                _strcmp
+                0x0000051a                _strncmp
+                0x00000560                data = .
+                0x00000560                _data = .
+                0x00000560                __data = .
+
+.data           0x00000560      0x13c
+ *(.rodata)
+ *(.data)
+ .data          0x00000560        0x0 e.o
+ .data          0x00000560       0x10 m.o
+ .data          0x00000570        0x0 u.o
+ *(.bss)
+ .bss           0x00000570        0x0 e.o
+ .bss           0x00000570        0x0 m.o
+ .bss           0x00000570        0x0 u.o
+ *(.*)
+ .comment       0x00000570       0x14 m.o
+ .eh_frame      0x00000584       0x38 m.o
+ .comment       0x000005bc       0x14 u.o
+ .eh_frame      0x000005d0       0xcc u.o
+                0x0000069c                dataend = .
+                0x0000069c                dataend = .
+                0x0000069c                __datasize = .
+LOAD e.o
+LOAD m.o
+LOAD u.o
+OUTPUT(test binary)
